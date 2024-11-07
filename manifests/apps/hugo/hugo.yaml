@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hugo
+  name: hugo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hugo
+  template:
+    metadata:
+      labels:
+        app: hugo
+    spec:
+      containers:
+      - image: atompi/hugo:0.117.0
+        name: hugo
+        args:
+        - --baseURL=http://hugo/hugo
+        ports:
+        - containerPort: 1313
+        volumeMounts:
+        - mountPath: /data
+          name: data-volume
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+      nodeSelector:
+        node_role: sys-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hugo
+  labels:
+    app: hugo
+spec:
+  type: ClusterIP
+  ports:
+  - name: hugo
+    port: 1313
+    targetPort: 1313
+  selector:
+    app: hugo

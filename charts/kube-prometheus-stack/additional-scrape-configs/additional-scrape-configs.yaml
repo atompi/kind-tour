@@ -1,0 +1,5 @@
+- job_name: "budget"
+  scrape_interval: 15s
+  static_configs:
+    - targets:
+      - 192.168.246.128:9901

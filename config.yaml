@@ -1,0 +1,46 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: kind
+networking:
+  kubeProxyMode: "ipvs"
+nodes:
+- role: control-plane
+  image: kindest/node:v1.31.0
+  kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    etcd:
+      local:
+        extraArgs:
+          listen-metrics-urls: "http://0.0.0.0:2381"
+    apiServer:
+      extraArgs:
+        service-node-port-range: "30000-40000"
+    controllerManager:
+      extraArgs:
+        bind-address: "0.0.0.0"
+    scheduler:
+      extraArgs:
+        bind-address: "0.0.0.0"
+  - |
+    kind: KubeletConfiguration
+    protectKernelDefaults: true
+    allowedUnsafeSysctls:
+    - "net.*"
+  - |
+    kind: KubeProxyConfiguration
+    metricsBindAddress: "0.0.0.0:10249"
+- role: worker
+  image: kindest/node:v1.31.0
+  extraMounts:
+  - hostPath: /data/kind/worker1/data
+    containerPath: /data
+    propagation: HostToContainer
+  - hostPath: /data/kind/worker1/local-path-provisioner
+    containerPath: /var/local-path-provisioner
+    propagation: HostToContainer
+  extraPortMappings:
+  - containerPort: 32080
+    hostPort: 32080
+  - containerPort: 32443
+    hostPort: 32443

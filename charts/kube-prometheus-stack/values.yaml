@@ -1,0 +1,132 @@
+# defaultRules:
+#   rules:
+#     kubeProxy: false
+#   runbookUrl: "https://runbooks.atompi.cc/runbooks"
+
+# additionalPrometheusRulesMap: {}
+
+alertmanager:
+  config:
+    route:
+      receiver: 'WebhookAlert'
+      routes:
+      - receiver: 'null'
+        matchers:
+          - alertname =~ "InfoInhibitor|Watchdog|etcdMemberCommunicationSlow"
+    receivers:
+    - name: 'null'
+    - name: 'WebhookAlert'
+      webhook_configs:
+      - send_resolved: true
+        url: 'http://webhook-tester.default:8080/00000000-0000-0000-0000-000000000000'
+  service:
+    type: NodePort
+  alertmanagerSpec:
+    retention: 168h
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "standard"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    nodeSelector:
+      node_role: sys-node
+    tolerations:
+      - key: CommonAddonsOnly
+        operator: "Equal"
+        value: "yes"
+        effect: "NoSchedule"
+
+grafana:
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+  adminPassword: "123456"
+  ingress:
+    enabled: true
+    hosts:
+      - mon.atompi.cc
+    tls:
+    - hosts:
+        - mon.atompi.cc
+  nodeSelector:
+    node_role: sys-node
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+  persistence:
+    enabled: true
+    storageClassName: "standard"
+    size: 5Gi
+
+# kubeProxy:
+#   enabled: false
+
+kube-state-metrics:
+  nodeSelector:
+    node_role: sys-node
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+
+prometheusOperator:
+  admissionWebhooks:
+    deployment:
+      nodeSelector:
+        node_role: sys-node
+      tolerations:
+        - key: CommonAddonsOnly
+          operator: "Equal"
+          value: "yes"
+          effect: "NoSchedule"
+    patch:
+      image:
+        tag: v1.4.4
+      nodeSelector:
+        node_role: sys-node
+      tolerations:
+        - key: CommonAddonsOnly
+          operator: "Equal"
+          value: "yes"
+          effect: "NoSchedule"
+  nodeSelector:
+    node_role: sys-node
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+
+prometheus:
+  service:
+    type: NodePort
+  prometheusSpec:
+    enableAdminAPI: true
+    tolerations:
+      - key: CommonAddonsOnly
+        operator: "Equal"
+        value: "yes"
+        effect: "NoSchedule"
+    nodeSelector:
+      node_role: sys-node
+    retention: 3650d
+    retentionSize: 4GB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "standard"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+      - job_name: "additional-tmp"
+        static_configs:
+        - targets: ["localhost:9090"]

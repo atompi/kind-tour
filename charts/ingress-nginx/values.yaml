@@ -1,0 +1,53 @@
+controller:
+  image:
+    digest: ""
+  config:
+    client-header-buffer-size: 16k
+    use-forwarded-headers: "true"
+    proxy-body-size: 4g
+  dnsPolicy: ClusterFirstWithHostNet
+  ingressClassResource:
+    default: true
+  extraArgs:
+    default-ssl-certificate: "ingress-nginx/atompi.cc-ingress-secret"
+  kind: DaemonSet
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+  nodeSelector:
+    node_role: sys-node
+    kubernetes.io/os: linux
+  service:
+    type: NodePort
+    nodePorts:
+      http: "32080"
+      https: "32443"
+  admissionWebhooks:
+    patch:
+      image:
+        digest: ""
+      nodeSelector:
+        node_role: sys-node
+        kubernetes.io/os: linux
+      tolerations:
+        - key: CommonAddonsOnly
+          operator: "Equal"
+          value: "yes"
+          effect: "NoSchedule"
+  opentelemetry:
+    enabled: true
+    image:
+      digest: ""
+
+defaultBackend:
+  enabled: true
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+  nodeSelector:
+    node_role: sys-node
+    kubernetes.io/os: linux

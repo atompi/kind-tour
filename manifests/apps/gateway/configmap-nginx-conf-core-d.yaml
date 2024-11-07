@@ -1,0 +1,64 @@
+apiVersion: v1
+data:
+  proxy.conf: |
+    proxy_http_version 1.1;
+
+    proxy_set_header Host $host;
+    proxy_set_header User-Agent $http_user_agent;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header Remote-Addr $remote_addr;
+    proxy_set_header X-Forwarded-Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Frame-Options SAMEORIGIN;
+    proxy_set_header X-Scheme $scheme;
+
+    proxy_buffers 256 16k;
+    proxy_buffer_size 16k;
+    proxy_busy_buffers_size 128k;
+    proxy_temp_file_write_size 128k;
+
+    proxy_connect_timeout 600s;
+    proxy_read_timeout 600s;
+    proxy_send_timeout 600s;
+
+    proxy_cache_revalidate on;
+    proxy_cache_min_uses 2;
+    proxy_cache_use_stale timeout;
+    proxy_cache_lock on;
+
+    proxy_ssl_verify off;
+    proxy_redirect off;
+  upstream.conf: |
+    upstream httpbin {
+        server httpbin:8080;
+        keepalive 32;
+    }
+    upstream hugo {
+        server hugo:1313;
+        keepalive 32;
+    }
+    upstream varnish {
+        server varnish:6081;
+        keepalive 32;
+    }
+  map.conf: |
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+  location.conf: |
+    location /hugo {
+        proxy_pass http://varnish;
+        include core.d/proxy.conf;
+    }
+    location /httpbin {
+        proxy_pass http://httpbin;
+        include core.d/proxy.conf;
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: nginx-conf-core-d

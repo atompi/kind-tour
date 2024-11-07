@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webhook-tester
+  name: webhook-tester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook-tester
+  template:
+    metadata:
+      labels:
+        app: webhook-tester
+    spec:
+      containers:
+      - image: tarampampam/webhook-tester:1.1.0
+        name: webhook-tester
+        args:
+        - serve
+        - --port
+        - "8080"
+        - --create-session
+        - 00000000-0000-0000-0000-000000000000
+        ports:
+        - containerPort: 8080
+      nodeSelector:
+        node_role: sys-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-tester
+  labels:
+    app: webhook-tester
+spec:
+  type: ClusterIP
+  ports:
+  - name: webhook-tester
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: webhook-tester

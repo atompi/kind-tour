@@ -1,0 +1,20 @@
+app:
+  scheduling:
+    nodeSelector:
+      node_role: sys-node
+  ingress:
+    enabled: true
+    hosts:
+      - kube-dashboard.atompi.cc
+    tls:
+      enabled: true
+    useDefaultIngressClass: true
+  tolerations:
+    - key: CommonAddonsOnly
+      operator: "Equal"
+      value: "yes"
+      effect: "NoSchedule"
+
+extras:
+  serviceMonitor:
+    enabled: true

@@ -1,0 +1,130 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: gateway
+      containers:
+        - name: nginx
+          image: "nginx:1.26.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /nginx_status
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /nginx_status
+              port: 80
+            timeoutSeconds: 3
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            limits:
+              cpu: 1
+              memory: 2Gi
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+          volumeMounts:
+          - name: nginx-conf
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: nginx-conf-conf-d
+            mountPath: /etc/nginx/conf.d
+          - name: nginx-conf-core-d
+            mountPath: /etc/nginx/core.d
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-conf
+          defaultMode: 0644
+      - name: nginx-conf-conf-d
+        configMap:
+          name: nginx-conf-conf-d
+      - name: nginx-conf-core-d
+        configMap:
+          name: nginx-conf-core-d
+      nodeSelector:
+        node_role: sys-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: gateway
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: kube.atompi.cc
+    http:
+      paths:
+      - backend:
+          service:
+            name: gateway
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  - host: kube-wt.atompi.cc
+    http:
+      paths:
+      - backend:
+          service:
+            name: gateway
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - kube.atompi.cc
+    - kube-wt.atompi.cc
+    #secretName: atompi.cc-ingress-secret

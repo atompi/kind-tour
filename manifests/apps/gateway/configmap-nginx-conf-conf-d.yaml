@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  default.conf: |
+    server {
+        listen 80 default_server;
+        server_name _;
+
+        access_log /var/log/nginx/gateway_access.log main;
+        error_log /var/log/nginx/gateway_error.log;
+
+        location /nginx_status {
+            stub_status on;
+            access_log off;
+        }
+
+        include core.d/location.conf;
+    }
+  kube-wt.conf: |
+    upstream webhook-tester {
+        server webhook-tester:8080;
+        keepalive 32;
+    }
+
+    server {
+        listen 80;
+        server_name kube-wt.atompi.cc;
+
+        access_log /var/log/nginx/gateway_access.log main;
+        error_log /var/log/nginx/gateway_error.log;
+
+        location / {
+            proxy_pass http://webhook-tester;
+            include core.d/proxy.conf;
+        }
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: nginx-conf-conf-d

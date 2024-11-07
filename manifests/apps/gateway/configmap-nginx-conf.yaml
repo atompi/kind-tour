@@ -1,0 +1,69 @@
+apiVersion: v1
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+
+    error_log /var/log/nginx/error.log notice;
+    pid /var/run/nginx.pid;
+
+    events {
+        use epoll;
+        worker_connections 65535;
+    }
+
+    http {
+        server_tokens off;
+        default_type application/octet-stream;
+        reset_timedout_connection on;
+
+        client_max_body_size 4096M;
+        client_body_buffer_size 256k;
+        client_header_buffer_size 64k;
+        large_client_header_buffers 64 256k;
+        server_names_hash_max_size 512;
+        server_names_hash_bucket_size 128;
+        types_hash_max_size 2048;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+
+        real_ip_header X-Forwarded-For;
+        real_ip_recursive on;
+        set_real_ip_from 0.0.0.0/32;
+
+        client_body_timeout 3m;
+        client_header_timeout 3m;
+        send_timeout 3m;
+        keepalive_timeout 60 20;
+
+        gzip on;
+        gzip_disable "msie6";
+        gzip_buffers 16 8k;
+        gzip_comp_level 1;
+        gzip_http_version 1.1;
+        gzip_min_length 10;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf;
+        gzip_vary on;
+        gzip_proxied any;
+
+        limit_conn_zone $binary_remote_addr zone=arbeit:10m;
+        limit_conn_status 429;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" $request_time $upstream_response_time '
+                        '"$http_x_forwarded_for" "$http_x_request_id" "$upstream_addr"';
+
+        access_log /var/log/nginx/access.log main;
+
+        include mime.types;
+        include core.d/map.conf;
+        include core.d/upstream.conf;
+        include conf.d/*.conf;
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: nginx-conf

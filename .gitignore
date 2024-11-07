@@ -1,0 +1,13 @@
+/charts/ingress-nginx/ingress-nginx/
+/charts/ingress-nginx/certs/
+/charts/kube-prometheus-stack/kube-prometheus-stack/
+/charts/kube-prometheus-stack/additional-scrape-configs/kube-prometheus-stack-prometheus-scrape-confg.yaml
+/charts/kubernetes-dashboard/kubernetes-dashboard/
+
+/manifests/app/hugo/docker/
+/manifests/app/varnish/docker/
+
+kind
+kubectl
+helm
+images.list
