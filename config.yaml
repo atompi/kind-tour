@@ -5,7 +5,7 @@ networking:
   kubeProxyMode: "ipvs"
 nodes:
 - role: control-plane
-  image: kindest/node:v1.31.0
+  image: kindest/node:v1.31.2
   kubeadmConfigPatches:
   - |
     kind: ClusterConfiguration
@@ -31,7 +31,7 @@ nodes:
     kind: KubeProxyConfiguration
     metricsBindAddress: "0.0.0.0:10249"
 - role: worker
-  image: kindest/node:v1.31.0
+  image: kindest/node:v1.31.2
   extraMounts:
   - hostPath: /data/kind/worker1/data
     containerPath: /data

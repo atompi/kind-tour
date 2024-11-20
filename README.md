@@ -25,8 +25,8 @@ kind delete cluster --name kind
 ## PS
 
 ```
-curl -LO "https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl"
-wget https://github.com/kubernetes-sigs/kind/releases/download/v0.24.0/kind-linux-amd64 -O kind
+curl -LO "https://dl.k8s.io/release/v1.31.2/bin/linux/amd64/kubectl"
+wget https://github.com/kubernetes-sigs/kind/releases/download/v0.25.0/kind-linux-amd64 -O kind
 wget https://get.helm.sh/helm-v3.16.2-linux-amd64.tar.gz
 tar -zxf helm-v3.16.2-linux-amd64.tar.gz
 mv linux-amd64/helm ./helm
