@@ -46,11 +46,12 @@ grafana:
   adminPassword: "123456"
   ingress:
     enabled: true
+    ingressClassName: nginx
     hosts:
       - mon.atompi.cc
     tls:
     - hosts:
-        - mon.atompi.cc
+      - mon.atompi.cc
   nodeSelector:
     node_role: sys-node
   tolerations:
@@ -104,10 +105,9 @@ prometheusOperator:
       effect: "NoSchedule"
 
 prometheus:
-  service:
-    type: NodePort
   prometheusSpec:
     enableAdminAPI: true
+    enableRemoteWriteReceiver: true
     tolerations:
       - key: CommonAddonsOnly
         operator: "Equal"

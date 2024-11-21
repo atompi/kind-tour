@@ -123,8 +123,19 @@ spec:
               number: 80
         path: /
         pathType: Prefix
+  - host: kube-prom.atompi.cc
+    http:
+      paths:
+      - backend:
+          service:
+            name: gateway
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
   tls:
   - hosts:
     - kube.atompi.cc
     - kube-wt.atompi.cc
+    - kube-prom.atompi.cc
     #secretName: atompi.cc-ingress-secret
