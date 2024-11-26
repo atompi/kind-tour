@@ -1,70 +1,13 @@
-# defaultRules:
-#   rules:
-#     kubeProxy: false
-#   runbookUrl: "https://runbooks.atompi.cc/runbooks"
-
-# additionalPrometheusRulesMap: {}
-
 alertmanager:
-  config:
-    route:
-      receiver: 'WebhookAlert'
-      routes:
-      - receiver: 'null'
-        matchers:
-          - alertname =~ "InfoInhibitor|Watchdog|etcdMemberCommunicationSlow"
-    receivers:
-    - name: 'null'
-    - name: 'WebhookAlert'
-      webhook_configs:
-      - send_resolved: true
-        url: 'http://webhook-tester.default:8080/00000000-0000-0000-0000-000000000000'
-  service:
-    type: NodePort
-  alertmanagerSpec:
-    retention: 168h
-    storage:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: "standard"
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 5Gi
-    nodeSelector:
-      node_role: sys-node
-    tolerations:
-      - key: CommonAddonsOnly
-        operator: "Equal"
-        value: "yes"
-        effect: "NoSchedule"
+  enabled: false
 
 grafana:
-  grafana.ini:
-    analytics:
-      check_for_updates: false
-  adminPassword: "123456"
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    hosts:
-      - mon.atompi.cc
-    tls:
-    - hosts:
-      - mon.atompi.cc
-  nodeSelector:
-    node_role: sys-node
-  tolerations:
-    - key: CommonAddonsOnly
-      operator: "Equal"
-      value: "yes"
-      effect: "NoSchedule"
-  persistence:
-    enabled: true
-    storageClassName: "standard"
-    size: 5Gi
+  enabled: false
 
 # kubeProxy:
+#   enabled: false
+
+# nodeExporter:
 #   enabled: false
 
 kube-state-metrics:
@@ -108,7 +51,6 @@ prometheus:
   prometheusSpec:
     enableAdminAPI: true
     enableRemoteWriteReceiver: true
-    remoteWriteDashboards: true
     tolerations:
       - key: CommonAddonsOnly
         operator: "Equal"
@@ -116,7 +58,7 @@ prometheus:
         effect: "NoSchedule"
     nodeSelector:
       node_role: sys-node
-    retention: 3650d
+    retention: 1d
     retentionSize: 4GB
     storageSpec:
       volumeClaimTemplate:
@@ -131,3 +73,7 @@ prometheus:
       - job_name: "additional-tmp"
         static_configs:
         - targets: ["localhost:9090"]
+    remoteWrite:
+      - url: http://192.168.220.128:8480/insert/0/prometheus/api/v1/write
+
+# additionalPrometheusRulesMap: {}
