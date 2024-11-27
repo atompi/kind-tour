@@ -74,6 +74,6 @@ prometheus:
         static_configs:
         - targets: ["localhost:9090"]
     remoteWrite:
-      - url: http://192.168.220.128:8480/insert/0/prometheus/api/v1/write
+      - url: http://vminsert:8480/insert/0/prometheus/api/v1/write
 
 # additionalPrometheusRulesMap: {}
