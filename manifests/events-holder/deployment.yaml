@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluentbit
+  labels:
+    app: fluentbit
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fluentbit
+      version: v1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fluentbit
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      containers:
+        - name: fluentbit
+          image: fluent/fluent-bit:4.0.0
+          imagePullPolicy: IfNotPresent
+          command:
+            [
+              "/fluent-bit/bin/fluent-bit",
+              "-c",
+              "/fluent-bit/etc/fluentbit.conf",
+            ]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          resources:
+            requests:
+              cpu: 5m
+              memory: 20Mi
+            limits:
+              cpu: 60m
+              memory: 60Mi
+          volumeMounts:
+            - name: fluentbit-config
+              mountPath: /fluent-bit/etc/
+      serviceAccountName: kube-event
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: fluentbit-config
+          configMap:
+            name: fluentbit-config
+      nodeSelector:
+        node_role: sys-node

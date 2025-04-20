@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victorialogs
+  labels:
+    app: victorialogs
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: victorialogs
+    port: 9428
+    targetPort: 9428
+    protocol: TCP
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: victorialogs
+  labels:
+    app: victorialogs
+subsets:
+- addresses:
+  - ip: 192.168.220.128
+  ports:
+  - name: victorialogs
+    port: 9428
+    protocol: TCP
